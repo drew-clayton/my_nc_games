@@ -100,7 +100,7 @@ describe(`API`, () => {
           });
         });
     });
-    it(`status 400: bad request - invalid input`, () => {
+    it(`status 400: bad request - invalid value`, () => {
       const data = { inc_votes: `wrong` };
       return request(app)
         .patch(`/api/reviews/1`)
@@ -110,7 +110,7 @@ describe(`API`, () => {
           expect(res.body.msg).toBe(`Invalid input`);
         });
     });
-    it(`status 400: bad request - invalid input`, () => {
+    it(`status 400: bad request - invalid key`, () => {
       const data = { wrong: 1 };
       return request(app)
         .patch(`/api/reviews/1`)
@@ -143,7 +143,7 @@ describe(`API`, () => {
           });
         });
     });
-    it(`status 400: missing object`, () => {
+    it(`status 400: empty object`, () => {
       const data = {};
       return request(app)
         .patch(`/api/reviews/1`)
@@ -264,12 +264,91 @@ describe(`API`, () => {
           });
         });
     });
+    it(`status 400: bad request - invalid input`, () => {
+      return request(app)
+        .get(`/api/reviews/wrong/comments`)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 404: not found - valid input but incorrect review id`, () => {
+      return request(app)
+        .get(`/api/reviews/500/comments`)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toBe(
+            `input '500' not found in 'reviews' database`
+          );
+        });
+    });
+    it(`status 404: not found - valid input but has no comments`, () => {
+      return request(app)
+        .get(`/api/reviews/1/comments`)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toBe(`This Review had no comments`);
+        });
+    });
   });
+
   describe(`POST /api/reviews/:review_id/comment`, () => {
     it(`status 201, accepts a body with username and body and posts a comment to that review`, () => {
       const data = {
         username: `dav3rid`,
         body: `this is a review without a comment yet`,
+      };
+      return request(app)
+        .post(`/api/reviews/1/comments`)
+        .send(data)
+        .expect(201)
+        .then(({ body: { comment } }) => {
+          expect(comment).toBeInstanceOf(Object);
+          expect(Object.entries(comment)).toHaveLength(1);
+          expect(Object.entries(comment[0])).toHaveLength(6);
+          expect.objectContaining({
+            comment_id: expect(comment[0].comment_id).toBe(7),
+            body: expect(comment[0].body).toBe(
+              "this is a review without a comment yet"
+            ),
+            votes: expect(comment[0].votes).toBe(0),
+            author: expect(comment[0].author).toBe("dav3rid"),
+            review_id: expect(comment[0].review_id).toBe(1),
+            created_at: expect.any(Date),
+          });
+        });
+    });
+    it(`status 400: bad request - invalid key`, () => {
+      const data = {
+        wrong: `dav3rid`,
+        body: `this is a review without a comment yet`,
+      };
+      return request(app)
+        .post(`/api/reviews/1/comments`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 400: bad request - invalid key part 2`, () => {
+      const data = {
+        username: `dav3rid`,
+        wrong: `this is a review without a comment yet`,
+      };
+      return request(app)
+        .post(`/api/reviews/1/comments`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 201, accepts a body with username and body and posts a comment to that review without any extra properties`, () => {
+      const data = {
+        username: `dav3rid`,
+        body: `this is a review without a comment yet`,
+        wrong: "this is extra",
       };
       return request(app)
         .post(`/api/reviews/1/comments`)
@@ -289,10 +368,38 @@ describe(`API`, () => {
           });
         });
     });
+    it(`status 400: empty object`, () => {
+      const data = {};
+      return request(app)
+        .post(`/api/reviews/1/comments`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
   });
   describe("DELETE /api/comments/:comment_id", () => {
-    test("status:204, responds with an empty response body", () => {
+    it("status:204, responds with an empty response body", () => {
       return request(app).delete("/api/comments/1").expect(204);
+    });
+    it(`status 400: bad request - invalid input`, () => {
+      return request(app)
+        .delete("/api/comments/wrong")
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 404: not found - valid input`, () => {
+      return request(app)
+        .delete("/api/comments/500")
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toBe(
+            `input '500' not found in 'reviews' database`
+          );
+        });
     });
   });
   describe(`GET /api`, () => {

@@ -44,14 +44,28 @@ exports.getReviews = (req, res, next) => {
 
 exports.getCommentsFromReviewId = (req, res, next) => {
   const { review_id } = req.params;
-  selectCommentsFromReviewId(review_id).then((comments) => {
-    res.status(200).send({ comments });
-  });
+  Promise.all([
+    selectCommentsFromReviewId(review_id),
+    checksIfExists(`reviews`, `review_id`, review_id),
+  ])
+    .then(([comments]) => {
+      if (comments.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: `This Review had no comments`,
+        });
+      } else {
+        res.status(200).send({ comments });
+      }
+    })
+    .catch(next);
 };
 
 exports.postCommentToReviewId = (req, res, next) => {
   const { review_id } = req.params;
-  addCommentToReviewId(review_id, req.body).then((comment) => {
-    res.status(201).send({ comment });
-  });
+  addCommentToReviewId(review_id, req.body)
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch(next);
 };
