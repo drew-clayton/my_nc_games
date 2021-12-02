@@ -10,5 +10,7 @@ const categoriesRouter = express.Router();
 categoriesRouter.route("/").get(getCategories);
 // uses router to process get request using controller function exported from categories.controller
 
+// console.log("in categories.router.js");
+
 module.exports = categoriesRouter;
 // exports categoriesRouter to app.router.js for next level of routing

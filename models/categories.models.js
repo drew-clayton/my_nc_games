@@ -3,8 +3,6 @@ const db = require("../db/connection");
 
 exports.selectCategories = () => {
   //create data manipulation for controller
-  //   return db
-  //     .query(
-  //     )
-  //     .then(({rows}) => rows);
+  return db.query(`SELECT * FROM categories;`).then(({ rows }) => rows);
+  // querys database with SQL then returns results to controller as a promise
 };

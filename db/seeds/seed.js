@@ -150,4 +150,4 @@ const seed = (data) => {
   );
 };
 
-module.exports = seed;
+module.exports = { seed };
