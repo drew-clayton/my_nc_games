@@ -397,7 +397,7 @@ describe(`API`, () => {
         .expect(404)
         .then((res) => {
           expect(res.body.msg).toBe(
-            `input '500' not found in 'reviews' database`
+            `input '500' not found in 'comments' database`
           );
         });
     });
