@@ -82,14 +82,14 @@ _This is a summary of all the endpoints. More detail about each endpoint is furt
 **Essential endpoints**
 
 ```http
-GET /api/categories
+GET /api/categories DONE
 GET /api/reviews/:review_id
 PATCH /api/reviews/:review_id
 GET /api/reviews
 GET /api/reviews/:review_id/comments
 POST /api/reviews/:review_id/comments
 DELETE /api/comments/:comment_id
-GET /api
+GET /api - DONE
 ```
 
 > Hosting and README time!
@@ -145,16 +145,7 @@ Responds with:
 
 - a review object, which should have the following properties:
 
-  - `owner` which is the `username` from the users table
-  - `title`
-  - `review_id`
-  - `review_body`
-  - `designer`
-  - `review_img_url`
-  - `category`
-  - `created_at`
-  - `votes`
-  - `comment_count` which is the total count of all the comments with this review_id - you should make use of queries to the database in order to achieve this
+    which is the total count of all the comments with this review_id - you should make use of queries to the database in order to achieve this
 
 ---
 

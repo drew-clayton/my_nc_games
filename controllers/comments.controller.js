@@ -11,8 +11,5 @@ exports.deleteComment = (req, res, next) => {
     .then(([]) => {
       res.status(204).send();
     })
-    .catch((err) => {
-      console.log(err);
-      next(err);
-    });
+    .catch(next);
 };

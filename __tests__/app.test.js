@@ -292,7 +292,7 @@ describe(`API`, () => {
     });
   });
 
-  describe(`POST /api/reviews/:review_id/comment`, () => {
+  describe(`POST /api/reviews/:review_id/comments`, () => {
     it(`status 201, accepts a body with username and body and posts a comment to that review`, () => {
       const data = {
         username: `dav3rid`,
