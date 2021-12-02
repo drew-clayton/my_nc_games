@@ -190,7 +190,7 @@ describe(`API`, () => {
           });
         });
     });
-    it(`status 400: incorrect sort_by input`, () => {
+    it(`status 404: incorrect sort_by input`, () => {
       return request(app)
         .get(`/api/reviews?sort_by=wrong`)
         .expect(404)
@@ -206,7 +206,7 @@ describe(`API`, () => {
           expect(reviews).toBeSortedBy(`votes`, { ascending: true });
         });
     });
-    it(`status 400: incorrect order input`, () => {
+    it(`status 404: incorrect order input`, () => {
       return request(app)
         .get(`/api/reviews?order=wrong`)
         .expect(404)
