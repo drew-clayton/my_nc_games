@@ -44,16 +44,18 @@ describe(`API`, () => {
           expect(review).toHaveLength(1);
           expect(Object.entries(review[0])).toHaveLength(10);
           expect.objectContaining({
-            owner: expect.any(String),
-            title: expect.any(String),
-            review_id: expect.any(Number),
-            review_body: expect.any(String),
-            designer: expect.any(String),
-            review_img_url: expect.any(String),
-            category: expect.any(String),
+            owner: expect(review[0].owner).toBe("mallionaire"),
+            title: expect(review[0].title).toBe("Agricola"),
+            review_id: expect(review[0].review_id).toBe(1),
+            review_body: expect(review[0].review_body).toBe("Farmyard fun!"),
+            designer: expect(review[0].designer).toBe("Uwe Rosenberg"),
+            review_img_url: expect(review[0].review_img_url).toBe(
+              "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+            ),
+            category: expect(review[0].category).toBe("euro game"),
             created_at: expect.any(Date),
-            votes: expect.any(Number),
-            comment_count: expect.any(Number),
+            votes: expect(review[0].votes).toBe(1),
+            comment_count: expect(review[0].comment_count).toBe(0),
           });
         });
     });
@@ -85,18 +87,19 @@ describe(`API`, () => {
         .expect(200)
         .then(({ body: { review } }) => {
           expect(review).toBeInstanceOf(Object);
-          expect(review).toHaveLength(1);
-          expect(Object.entries(review[0])).toHaveLength(9);
+          expect(Object.entries(review)).toHaveLength(9);
           expect.objectContaining({
-            review_id: expect.any(Number),
-            title: expect.any(String),
-            owner: expect.any(String),
-            review_body: expect.any(String),
-            designer: expect.any(String),
-            review_img_url: expect.any(String),
-            category: expect.any(String),
+            owner: expect(review.owner).toBe("mallionaire"),
+            title: expect(review.title).toBe("Agricola"),
+            review_id: expect(review.review_id).toBe(1),
+            review_body: expect(review.review_body).toBe("Farmyard fun!"),
+            designer: expect(review.designer).toBe("Uwe Rosenberg"),
+            review_img_url: expect(review.review_img_url).toBe(
+              "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+            ),
+            category: expect(review.category).toBe("euro game"),
             created_at: expect.any(Date),
-            votes: expect(review[0].votes).toBe(-9),
+            votes: expect(review.votes).toBe(-9),
           });
         });
     });
@@ -120,7 +123,7 @@ describe(`API`, () => {
           expect(res.body.msg).toBe(`Invalid input`);
         });
     });
-    it(`status 201: extra key-pairs are ignored`, () => {
+    it(`status 200: extra key-pairs are ignored`, () => {
       const data = { inc_votes: -10, wrong: "wrong", title: "wrong title" };
       return request(app)
         .patch(`/api/reviews/1`)
@@ -128,18 +131,17 @@ describe(`API`, () => {
         .expect(200)
         .then(({ body: { review } }) => {
           expect(review).toBeInstanceOf(Object);
-          expect(review).toHaveLength(1);
-          expect(Object.entries(review[0])).toHaveLength(9);
+          expect(Object.entries(review)).toHaveLength(9);
           expect.objectContaining({
             review_id: expect.any(Number),
-            title: expect(review[0].title).toBe("Agricola"),
+            title: expect(review.title).toBe("Agricola"),
             owner: expect.any(String),
             review_body: expect.any(String),
             designer: expect.any(String),
             review_img_url: expect.any(String),
             category: expect.any(String),
             created_at: expect.any(Date),
-            votes: expect(review[0].votes).toBe(-9),
+            votes: expect(review.votes).toBe(-9),
           });
         });
     });
@@ -282,14 +284,6 @@ describe(`API`, () => {
           );
         });
     });
-    it(`status 404: not found - valid input but has no comments`, () => {
-      return request(app)
-        .get(`/api/reviews/1/comments`)
-        .expect(404)
-        .then((res) => {
-          expect(res.body.msg).toBe(`This Review had no comments`);
-        });
-    });
   });
 
   describe(`POST /api/reviews/:review_id/comments`, () => {
@@ -331,7 +325,7 @@ describe(`API`, () => {
           expect(res.body.msg).toBe(`Invalid input`);
         });
     });
-    it(`status 400: bad request - invalid key part 2`, () => {
+    it(`status 400: bad request - invalid second key`, () => {
       const data = {
         username: `dav3rid`,
         wrong: `this is a review without a comment yet`,

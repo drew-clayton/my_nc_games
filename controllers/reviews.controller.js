@@ -25,11 +25,10 @@ exports.patchReviewFromId = (req, res, next) => {
 
   updateReviewFromId(review_id, inc_votes)
     .then((review) => {
-      res.status(200).send({ review });
+      res.status(200).send({ review: review[0] });
     })
     .catch(next);
 };
-
 exports.getReviews = (req, res, next) => {
   const { sort_by, order, category } = req.query;
   Promise.all([
@@ -49,14 +48,7 @@ exports.getCommentsFromReviewId = (req, res, next) => {
     checksIfExists(`reviews`, `review_id`, review_id),
   ])
     .then(([comments]) => {
-      if (comments.length === 0) {
-        return Promise.reject({
-          status: 404,
-          msg: `This Review had no comments`,
-        });
-      } else {
-        res.status(200).send({ comments });
-      }
+      res.status(200).send({ comments });
     })
     .catch(next);
 };

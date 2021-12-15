@@ -12,10 +12,7 @@ exports.getCategories = (req, res, next) => {
       // this will give back a status and send back the results from the selectCategories function in an object looking like {categories : RESULTS OBJECT}
       //
     })
-    .catch((err) => {
-      // catches any errors and logs the error
-      console.log(err);
-    });
+    .catch(next);
   //exports getCategories to categories router to be used when hits that route
   //
 };
