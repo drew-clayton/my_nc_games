@@ -33,6 +33,24 @@ describe(`API`, () => {
         });
     });
   });
+  describe(`GET /api/users`, () => {
+    it(`status 200, returns an array of user objects conataining username, name and avatar_url`, () => {
+      return request(app)
+        .get(`/api/users`)
+        .expect(200)
+        .then(({ body: { users } }) => {
+          expect(users).toBeInstanceOf(Array);
+          expect(users).toHaveLength(4);
+          users.forEach(() => {
+            expect.objectContaining({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            });
+          });
+        });
+    });
+  });
 
   describe(`GET /api/reviews/:review_id`, () => {
     it(`status 200, a review object`, () => {
@@ -40,22 +58,21 @@ describe(`API`, () => {
         .get(`/api/reviews/1`)
         .expect(200)
         .then(({ body: { review } }) => {
-          expect(review).toBeInstanceOf(Array);
-          expect(review).toHaveLength(1);
-          expect(Object.entries(review[0])).toHaveLength(10);
+          expect(review).toBeInstanceOf(Object);
+          expect(Object.entries(review)).toHaveLength(10);
           expect.objectContaining({
-            owner: expect(review[0].owner).toBe("mallionaire"),
-            title: expect(review[0].title).toBe("Agricola"),
-            review_id: expect(review[0].review_id).toBe(1),
-            review_body: expect(review[0].review_body).toBe("Farmyard fun!"),
-            designer: expect(review[0].designer).toBe("Uwe Rosenberg"),
-            review_img_url: expect(review[0].review_img_url).toBe(
+            owner: expect(review.owner).toBe("mallionaire"),
+            title: expect(review.title).toBe("Agricola"),
+            review_id: expect(review.review_id).toBe(1),
+            review_body: expect(review.review_body).toBe("Farmyard fun!"),
+            designer: expect(review.designer).toBe("Uwe Rosenberg"),
+            review_img_url: expect(review.review_img_url).toBe(
               "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
             ),
-            category: expect(review[0].category).toBe("euro game"),
+            category: expect(review.category).toBe("euro game"),
             created_at: expect.any(Date),
-            votes: expect(review[0].votes).toBe(1),
-            comment_count: expect(review[0].comment_count).toBe(0),
+            votes: expect(review.votes).toBe(1),
+            comment_count: expect(review.comment_count).toBe(0),
           });
         });
     });
@@ -74,6 +91,34 @@ describe(`API`, () => {
         .then((res) => {
           expect(res.body.msg).toBe(
             `input '500' not found in 'reviews' database`
+          );
+        });
+    });
+  });
+  describe(`GET /api/users/:username`, () => {
+    it(`status 200, a user object`, () => {
+      return request(app)
+        .get(`/api/users/mallionaire`)
+        .expect(200)
+        .then(({ body: { user } }) => {
+          expect(user).toBeInstanceOf(Object);
+          expect(Object.entries(user)).toHaveLength(3);
+          expect.objectContaining({
+            username: expect(user.username).toBe("mallionaire"),
+            name: expect(user.name).toBe("haz"),
+            avatar_url: expect(user.avatar_url).toBe(
+              "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+            ),
+          });
+        });
+    });
+    it(`status 404: not found - valid input`, () => {
+      return request(app)
+        .get(`/api/users/wrong`)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toBe(
+            `input 'wrong' not found in 'users' database`
           );
         });
     });

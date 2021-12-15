@@ -1,6 +1,6 @@
-const { removeComment } = require("../models/comments.models");
+const { removeComment } = require("../models/comments.model");
 
-const { checksIfExists } = require(`../utils/utils`);
+const { checksIfExists } = require(`../models/utils.model`);
 
 exports.deleteComment = (req, res, next) => {
   const { comment_id } = req.params;

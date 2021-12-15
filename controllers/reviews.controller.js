@@ -4,8 +4,8 @@ const {
   selectReviews,
   selectCommentsFromReviewId,
   addCommentToReviewId,
-} = require("../models/reviews.models");
-const { checksIfExists } = require(`../utils/utils`);
+} = require("../models/reviews.model");
+const { checksIfExists } = require(`../models/utils.model`);
 
 exports.getReviewFromId = (req, res, next) => {
   const { review_id } = req.params;
@@ -14,7 +14,7 @@ exports.getReviewFromId = (req, res, next) => {
     checksIfExists(`reviews`, `review_id`, review_id),
   ])
     .then(([review]) => {
-      res.status(200).send({ review });
+      res.status(200).send({ review: review[0] });
     })
     .catch(next);
 };

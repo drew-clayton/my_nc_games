@@ -9,6 +9,7 @@ const categoriesRouter = require("./categories.router");
 const reviewsRouter = require("./reviews.router");
 // requires reviewsRouter from next router (reviews.router)
 const commentsRouter = require("./comments.router");
+const usersRouter = require("./users.router");
 
 const apiRouter = express.Router();
 // creates a apiRouter function which will be exported to app.js this is the first connection to routing
@@ -20,6 +21,7 @@ apiRouter.use("/reviews", reviewsRouter);
 // routes to using reviewsRouter function taken from reviews.router
 
 apiRouter.use("/comments", commentsRouter);
+apiRouter.use("/users", usersRouter);
 
 apiRouter.route("/").get(getJSON);
 
