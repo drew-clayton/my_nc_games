@@ -149,13 +149,12 @@ Go through your tests and make sure that you change each of these, what you have
 
 - `GET /api/users`
 
-  - [ ] Status 200, responds with array of user objects
+  - [✅] Status 200, responds with array of user objects
 
 - `GET /api/users/:username`
 
-  - [ ] Status 200, responds with single user object
-  - [ ] Status 404, non existent ID, e.g 999
-  - [ ] Status 400, invalid ID, e.g "not-an-id"
+  - [✅] Status 200, responds with single user object
+  - [✅] Status 400, invalid ID, e.g "not-an-id"
 
 - `PATCH /api/comments/:comment_id`
 
