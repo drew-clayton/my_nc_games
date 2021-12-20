@@ -64,7 +64,7 @@ exports.selectReviews = (sort_by = `created_at`, order = `DESC`, category) => {
   `,
       params
     )
-    .then(({ rows }) => console.log(rows));
+    .then(({ rows }) => rows);
 };
 
 exports.selectCommentsFromReviewId = (id) => {
