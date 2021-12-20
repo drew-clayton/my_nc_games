@@ -64,7 +64,7 @@ exports.selectReviews = (sort_by = `created_at`, order = `DESC`, category) => {
   `,
       params
     )
-    .then(({ rows }) => rows);
+    .then(({ rows }) => console.log(rows));
 };
 
 exports.selectCommentsFromReviewId = (id) => {
@@ -91,6 +91,22 @@ VALUES
   ($1, $2, $3) RETURNING *;
   `,
       [id, username, body]
+    )
+    .then(({ rows }) => rows);
+};
+
+exports.addReview = (obj) => {
+  const { owner, title, review_body, designer, category } = obj;
+
+  return db
+    .query(
+      `
+      INSERT INTO reviews
+  (owner, title, review_body, designer, category, votes)
+VALUES
+  ($1, $2, $3, $4, $5, 0) RETURNING *;
+  `,
+      [owner, title, review_body, designer, category]
     )
     .then(({ rows }) => rows);
 };

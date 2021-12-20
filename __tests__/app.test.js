@@ -38,10 +38,10 @@ describe(`API`, () => {
       return request(app)
         .get(`/api/users`)
         .expect(200)
-        .then(({ body: { users } }) => {
-          expect(users).toBeInstanceOf(Array);
-          expect(users).toHaveLength(4);
-          users.forEach(() => {
+        .then(({ body: { username } }) => {
+          expect(username).toBeInstanceOf(Array);
+          expect(username).toHaveLength(4);
+          username.forEach(() => {
             expect.objectContaining({
               username: expect.any(String),
               name: expect.any(String),
@@ -100,13 +100,13 @@ describe(`API`, () => {
       return request(app)
         .get(`/api/users/mallionaire`)
         .expect(200)
-        .then(({ body: { user } }) => {
-          expect(user).toBeInstanceOf(Object);
-          expect(Object.entries(user)).toHaveLength(3);
+        .then(({ body: { username } }) => {
+          expect(username).toBeInstanceOf(Object);
+          expect(Object.entries(username)).toHaveLength(3);
           expect.objectContaining({
-            username: expect(user.username).toBe("mallionaire"),
-            name: expect(user.name).toBe("haz"),
-            avatar_url: expect(user.avatar_url).toBe(
+            username: expect(username.username).toBe("mallionaire"),
+            name: expect(username.name).toBe("haz"),
+            avatar_url: expect(username.avatar_url).toBe(
               "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
             ),
           });
@@ -124,7 +124,7 @@ describe(`API`, () => {
     });
   });
   describe(`PATCH /api/reviews/:review_id`, () => {
-    it(`status 201, takes an object with inc_votes and a number which will either increment or decrement the votes property, and will return the updated review`, () => {
+    it(`status 200, takes an object with inc_votes and a number which will either increment or decrement the votes property, and will return the updated review`, () => {
       const data = { inc_votes: -10 };
       return request(app)
         .patch(`/api/reviews/1`)
@@ -201,6 +201,95 @@ describe(`API`, () => {
         });
     });
   });
+  describe(`PATCH /api/comments/:comment_id`, () => {
+    it(`status 200, takes an object winc_votes, and will return the updated review`, () => {
+      const data = { inc_votes: -6 };
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send(data)
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(comment).toBeInstanceOf(Object);
+          expect(Object.entries(comment)).toHaveLength(6);
+          expect.objectContaining({
+            comment_id: expect(comment.comment_id).toBe(1),
+            author: expect(comment.author).toBe("bainesface"),
+            body: expect(comment.body).toBe("I loved this game too!"),
+            review_id: expect(comment.review_id).toBe(2),
+            created_at: expect.any(1511354613389),
+            votes: expect(comment.votes).toBe(10),
+          });
+        });
+    });
+    it(`status 400: bad request - invalid value`, () => {
+      const data = { inc_votes: `wrong` };
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 400: bad request - invalid key`, () => {
+      const data = { wrong: 1 };
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 200: extra key-pairs are ignored and is votes number is empty or zero`, () => {
+      const data = { inc_votes: 0, wrong: "wrong", title: "wrong title" };
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send(data)
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(comment).toBeInstanceOf(Object);
+          expect(Object.entries(comment)).toHaveLength(6);
+          expect.objectContaining({
+            comment_id: expect(comment.comment_id).toBe(1),
+            author: expect(comment.author).toBe("bainesface"),
+            body: expect(comment.body).toBe("I loved this game too!"),
+            review_id: expect(comment.review_id).toBe(2),
+            created_at: expect.any(1511354613389),
+            votes: expect(comment.votes).toBe(16),
+          });
+        });
+    });
+    it(`status 400: empty object`, () => {
+      const data = {};
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 400: bad request - invalid input`, () => {
+      return request(app)
+        .patch(`/api/comments/wrong`)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    it(`status 404: not found - valid input`, () => {
+      return request(app)
+        .patch(`/api/comments/500`)
+        .expect(404)
+        .then((res) => {
+          expect(res.body.msg).toBe(
+            `input '500' not found in 'comments' database`
+          );
+        });
+    });
+  });
+
   describe(`GET /api/reviews`, () => {
     it(`status 200, returns an array of review objects and defaults to descending and date`, () => {
       return request(app)
@@ -343,16 +432,15 @@ describe(`API`, () => {
         .expect(201)
         .then(({ body: { comment } }) => {
           expect(comment).toBeInstanceOf(Object);
-          expect(Object.entries(comment)).toHaveLength(1);
-          expect(Object.entries(comment[0])).toHaveLength(6);
+          expect(Object.entries(comment)).toHaveLength(6);
           expect.objectContaining({
-            comment_id: expect(comment[0].comment_id).toBe(7),
-            body: expect(comment[0].body).toBe(
+            comment_id: expect(comment.comment_id).toBe(7),
+            body: expect(comment.body).toBe(
               "this is a review without a comment yet"
             ),
-            votes: expect(comment[0].votes).toBe(0),
-            author: expect(comment[0].author).toBe("dav3rid"),
-            review_id: expect(comment[0].review_id).toBe(1),
+            votes: expect(comment.votes).toBe(0),
+            author: expect(comment.author).toBe("dav3rid"),
+            review_id: expect(comment.review_id).toBe(1),
             created_at: expect.any(Date),
           });
         });
@@ -395,8 +483,7 @@ describe(`API`, () => {
         .expect(201)
         .then(({ body: { comment } }) => {
           expect(comment).toBeInstanceOf(Object);
-          expect(Object.entries(comment)).toHaveLength(1);
-          expect(Object.entries(comment[0])).toHaveLength(6);
+          expect(Object.entries(comment)).toHaveLength(6);
           expect.objectContaining({
             comment_id: expect.any(Number),
             body: expect.any(String),
@@ -411,6 +498,99 @@ describe(`API`, () => {
       const data = {};
       return request(app)
         .post(`/api/reviews/1/comments`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+  });
+  describe(`POST /api/reviews/`, () => {
+    it(`status 201, accepts a body with a owner,title, review_body, designer, and category. Returns a new full review object`, () => {
+      const data = {
+        owner: "philippaclaire9",
+        title: "test title",
+        review_body: "test body",
+        designer: "test designer",
+        category: "euro game",
+      };
+      return request(app)
+        .post(`/api/reviews`)
+        .send(data)
+        .expect(201)
+        .then(({ body: { review } }) => {
+          expect(review).toBeInstanceOf(Object);
+          expect(Object.entries(review)).toHaveLength(10);
+          expect.objectContaining({
+            owner: expect(review.owner).toBe("philippaclaire9"),
+            title: expect(review.title).toBe("test title"),
+            review_body: expect(review.review_body).toBe("test body"),
+            designer: expect(review.designer).toBe("test designer"),
+            category: expect(review.category).toBe("euro game"),
+            review_id: expect(review.review_id).toBe(14),
+            votes: expect(review.votes).toBe(0),
+            created_at: expect.any(Date),
+            comment_count: expect(review.comment_count).toBe(0),
+          });
+        });
+    });
+    it(`status 400: bad request - invalid key`, () => {
+      const data = {
+        wrong: "philippaclaire9",
+        title: "test title",
+        review_body: "test body",
+        designer: "test designer",
+        category: "euro game",
+      };
+      return request(app)
+        .post(`/api/reviews`)
+        .send(data)
+        .expect(400)
+        .then((res) => {
+          expect(res.body.msg).toBe(`Invalid input`);
+        });
+    });
+    return request(app)
+      .post(`/api/reviews`)
+      .send(data)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe(`Invalid input`);
+      });
+
+    it(`status 201, accepts a body with extra properties but doesn't return them extra properties`, () => {
+      const data = {
+        owner: "philippaclaire9",
+        title: "test title",
+        review_body: "test body",
+        designer: "test designer",
+        category: "euro game",
+        wrong: "this is extra",
+      };
+      return request(app)
+        .post(`/api/reviews`)
+        .send(data)
+        .expect(201)
+        .then(({ body: { review } }) => {
+          expect(review).toBeInstanceOf(Object);
+          expect(Object.entries(review)).toHaveLength(10);
+          expect.objectContaining({
+            owner: expect(review.owner).toBe("philippaclaire9"),
+            title: expect(review.title).toBe("test title"),
+            review_body: expect(review.review_body).toBe("test body"),
+            designer: expect(review.designer).toBe("test designer"),
+            category: expect(review.category).toBe("euro game"),
+            review_id: expect(review.review_id).toBe(14),
+            votes: expect(review.votes).toBe(0),
+            created_at: expect.any(Date),
+            comment_count: expect(review.comment_count).toBe(0),
+          });
+        });
+    });
+    it(`status 400: empty object`, () => {
+      const data = {};
+      return request(app)
+        .post(`/api/reviews`)
         .send(data)
         .expect(400)
         .then((res) => {

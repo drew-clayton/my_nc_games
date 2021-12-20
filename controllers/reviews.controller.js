@@ -4,6 +4,7 @@ const {
   selectReviews,
   selectCommentsFromReviewId,
   addCommentToReviewId,
+  addReview,
 } = require("../models/reviews.model");
 const { checksIfExists } = require(`../models/utils.model`);
 
@@ -29,6 +30,7 @@ exports.patchReviewFromId = (req, res, next) => {
     })
     .catch(next);
 };
+
 exports.getReviews = (req, res, next) => {
   const { sort_by, order, category } = req.query;
   Promise.all([
@@ -57,7 +59,18 @@ exports.postCommentToReviewId = (req, res, next) => {
   const { review_id } = req.params;
   addCommentToReviewId(review_id, req.body)
     .then((comment) => {
-      res.status(201).send({ comment });
+      res.status(201).send({ comment: comment[0] });
+    })
+    .catch(next);
+};
+
+exports.postReview = (req, res, next) => {
+  addReview(req.body)
+    .then((review) => {
+      return selectReviewFromId(review[0].review_id);
+    })
+    .then((review) => {
+      res.status(201).send({ review: review[0] });
     })
     .catch(next);
 };

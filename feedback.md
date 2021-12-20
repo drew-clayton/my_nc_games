@@ -158,11 +158,11 @@ Go through your tests and make sure that you change each of these, what you have
 
 - `PATCH /api/comments/:comment_id`
 
-  - [ ] Status 200, updated single comment object
-  - [ ] Status 400, invalid ID, e.g. string of "not-an-id"
-  - [ ] Status 400, invalid inc_votes type, e.g. property is not a number
-  - [ ] Status 404, non existent ID, e.g. 0 or 9999
-  - [ ] Status 200, missing `inc_votes` key. No effect to comment.
+  - [✅] Status 200, updated single comment object
+  - [✅] Status 400, invalid ID, e.g. string of "not-an-id"
+  - [✅] Status 400, invalid inc_votes type, e.g. property is not a number
+  - [✅] Status 404, non existent ID, e.g. 0 or 9999
+  - [✅] Status 200, missing `inc_votes` key. No effect to comment.
 
 ## Extra Advanced Tasks
 
