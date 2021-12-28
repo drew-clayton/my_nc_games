@@ -12,17 +12,25 @@ exports.removeComment = (id) => {
     .then();
 };
 
-exports.updateCommentFromId = (id, votes) => {
+exports.updateCommentFromId = (id, votes, body) => {
+  let newBody = ``;
+  let params = [votes, id];
+  if (body !== undefined) {
+    newBody = `, body = $3`;
+    params.push(body);
+  }
+  console.log(params);
   return db
     .query(
       `
       UPDATE comments
       SET
-        votes = votes + $1
+      votes = votes + $1 
+      ${newBody}      
       WHERE comment_id = $2
       RETURNING *;
   `,
-      [votes, id]
+      params
     )
     .then(({ rows }) => rows);
 };

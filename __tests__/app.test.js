@@ -343,7 +343,7 @@ describe(`API`, () => {
       });
     });
     describe(`PATCH /api/comments/:comment_id`, () => {
-      it(`status 200, takes an object winc_votes, and will return the updated review`, () => {
+      it(`status 200, takes an object with inc_votes, and will return the updated review`, () => {
         const data = { inc_votes: -6 };
         return request(app)
           .patch(`/api/comments/1`)
@@ -395,6 +395,91 @@ describe(`API`, () => {
               comment_id: expect(comment.comment_id).toBe(1),
               author: expect(comment.author).toBe("bainesface"),
               body: expect(comment.body).toBe("I loved this game too!"),
+              review_id: expect(comment.review_id).toBe(2),
+              created_at: expect.any(1511354613389),
+              votes: expect(comment.votes).toBe(16),
+            });
+          });
+      });
+      it(`status 400: empty object`, () => {
+        const data = {};
+        return request(app)
+          .patch(`/api/comments/1`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 400: bad request - invalid input`, () => {
+        return request(app)
+          .patch(`/api/comments/wrong`)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 404: not found - valid input`, () => {
+        return request(app)
+          .patch(`/api/comments/500`)
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toBe(
+              `input '500' not found in 'comments' database`
+            );
+          });
+      });
+    });
+    describe(`PATCH /api/comments/:comment_id --- body`, () => {
+      it(`status 200, takes an object with a new body, and will return the updated review`, () => {
+        const data = { body: "this will replace previous body" };
+        return request(app)
+          .patch(`/api/comments/1`)
+          .send(data)
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toBeInstanceOf(Object);
+            expect(Object.entries(comment)).toHaveLength(6);
+            expect.objectContaining({
+              comment_id: expect(comment.comment_id).toBe(1),
+              author: expect(comment.author).toBe("bainesface"),
+              body: expect(comment.body).toBe(
+                "this will replace previous body"
+              ),
+              review_id: expect(comment.review_id).toBe(2),
+              created_at: expect.any(1511354613389),
+              votes: expect(comment.votes).toBe(16),
+            });
+          });
+      });
+      it(`status 400: bad request - invalid key`, () => {
+        const data = { wrong: 1 };
+        return request(app)
+          .patch(`/api/comments/1`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 200: extra key-pairs are ignored and is votes number is empty or zero`, () => {
+        const data = {
+          body: "this will replace body",
+          wrong: "wrong",
+          title: "wrong title",
+        };
+        return request(app)
+          .patch(`/api/comments/1`)
+          .send(data)
+          .expect(200)
+          .then(({ body: { comment } }) => {
+            expect(comment).toBeInstanceOf(Object);
+            expect(Object.entries(comment)).toHaveLength(6);
+            console.log(comment);
+            expect.objectContaining({
+              comment_id: expect(comment.comment_id).toBe(1),
+              author: expect(comment.author).toBe("bainesface"),
+              body: expect(comment.body).toBe("this will replace body"),
               review_id: expect(comment.review_id).toBe(2),
               created_at: expect.any(1511354613389),
               votes: expect(comment.votes).toBe(16),
@@ -517,7 +602,7 @@ describe(`API`, () => {
           });
       });
     });
-    describe(`POST /api/reviews/`, () => {
+    describe(`POST /api/reviews`, () => {
       it(`status 201, accepts a body with a owner,title, review_body, designer, and category. Returns a new full review object`, () => {
         const data = {
           owner: "philippaclaire9",
@@ -602,6 +687,72 @@ describe(`API`, () => {
           });
       });
     });
+    describe(`POST /api/categories`, () => {
+      it(`status 201, accepts a body with a slug and description and returns new category object`, () => {
+        const data = {
+          slug: "category name here",
+          description: "description here",
+        };
+        return request(app)
+          .post(`/api/categories`)
+          .send(data)
+          .expect(201)
+          .then(({ body: { category } }) => {
+            expect(category).toBeInstanceOf(Object);
+            expect(Object.entries(category)).toHaveLength(2);
+            expect.objectContaining({
+              slug: expect(category.slug).toBe("category name here"),
+              description: expect(category.description).toBe(
+                "description here"
+              ),
+            });
+          });
+      });
+      it(`status 400: bad request - invalid key`, () => {
+        const data = {
+          wrong: "wrong",
+          description: "test description",
+        };
+        return request(app)
+          .post(`/api/categories`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 201, accepts a body with extra properties but doesn't return them extra properties`, () => {
+        const data = {
+          slug: "test slug",
+          description: "test description",
+          extra: "test extra",
+        };
+        return request(app)
+          .post(`/api/categories`)
+          .send(data)
+          .expect(201)
+          .then(({ body: { category } }) => {
+            expect(category).toBeInstanceOf(Object);
+            expect(Object.entries(category)).toHaveLength(2);
+            expect.objectContaining({
+              slug: expect(category.slug).toBe("test slug"),
+              description: expect(category.description).toBe(
+                "test description"
+              ),
+            });
+          });
+      });
+      it(`status 400: empty object`, () => {
+        const data = {};
+        return request(app)
+          .post(`/api/categories`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+    });
   });
   describe(`DELETE requests`, () => {
     describe("DELETE /api/comments/:comment_id", () => {
@@ -623,6 +774,29 @@ describe(`API`, () => {
           .then((res) => {
             expect(res.body.msg).toBe(
               `input '500' not found in 'comments' database`
+            );
+          });
+      });
+    });
+    describe("DELETE /api/reviews/:review_id", () => {
+      it("status:204, responds with an empty response body", () => {
+        return request(app).delete("/api/reviews/1").expect(204);
+      });
+      it(`status 400: bad request - invalid input`, () => {
+        return request(app)
+          .delete("/api/reviews/wrong")
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 404: not found - valid input`, () => {
+        return request(app)
+          .delete("/api/reviews/500")
+          .expect(404)
+          .then((res) => {
+            expect(res.body.msg).toBe(
+              `input '500' not found in 'reviews' database`
             );
           });
       });

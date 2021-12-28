@@ -1,4 +1,7 @@
-const { selectCategories } = require("../models/categories.model");
+const {
+  selectCategories,
+  insertCategory,
+} = require("../models/categories.model");
 // requires in selectCategories from categories model
 
 exports.getCategories = (req, res, next) => {
@@ -15,4 +18,12 @@ exports.getCategories = (req, res, next) => {
     .catch(next);
   //exports getCategories to categories router to be used when hits that route
   //
+};
+
+exports.postCategory = (req, res, next) => {
+  insertCategory(req.body)
+    .then((category) => {
+      res.status(201).send({ category: category[0] });
+    })
+    .catch(next);
 };

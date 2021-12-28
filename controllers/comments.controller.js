@@ -19,12 +19,12 @@ exports.deleteComment = (req, res, next) => {
 
 exports.patchCommentFromId = (req, res, next) => {
   const { comment_id } = req.params;
-  const { inc_votes } = req.body;
+  const { inc_votes, body } = req.body;
+
   Promise.all([
-    updateCommentFromId(comment_id, inc_votes),
+    updateCommentFromId(comment_id, inc_votes, body),
     checksIfExists(`comments`, `comment_id`, comment_id),
   ])
-
     .then(([comment]) => {
       res.status(200).send({ comment: comment[0] });
     })

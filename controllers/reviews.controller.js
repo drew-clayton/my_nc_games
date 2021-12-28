@@ -5,6 +5,7 @@ const {
   selectCommentsFromReviewId,
   addCommentToReviewId,
   addReview,
+  deleteReview,
 } = require("../models/reviews.model");
 const { checksIfExists } = require(`../models/utils.model`);
 
@@ -71,6 +72,18 @@ exports.postReview = (req, res, next) => {
     })
     .then((review) => {
       res.status(201).send({ review: review[0] });
+    })
+    .catch(next);
+};
+
+exports.removeReview = (req, res, next) => {
+  const { review_id } = req.params;
+  Promise.all([
+    checksIfExists(`reviews`, `review_id`, review_id),
+    deleteReview(review_id),
+  ])
+    .then(([]) => {
+      res.status(204).send();
     })
     .catch(next);
 };

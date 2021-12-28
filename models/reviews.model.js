@@ -110,3 +110,15 @@ VALUES
     )
     .then(({ rows }) => rows);
 };
+
+exports.deleteReview = (id) => {
+  return db
+    .query(
+      `
+    DELETE FROM reviews
+    WHERE review_id = $1;
+`,
+      [id]
+    )
+    .then();
+};
