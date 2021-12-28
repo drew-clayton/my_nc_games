@@ -12,14 +12,13 @@ exports.removeComment = (id) => {
     .then();
 };
 
-exports.updateCommentFromId = (id, votes, body) => {
+exports.updateCommentFromId = (id, votes = 0, body) => {
   let newBody = ``;
   let params = [votes, id];
   if (body !== undefined) {
     newBody = `, body = $3`;
     params.push(body);
   }
-  console.log(params);
   return db
     .query(
       `
