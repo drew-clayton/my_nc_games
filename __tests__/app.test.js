@@ -223,6 +223,41 @@ describe(`API`, () => {
           });
       });
     });
+    // describe(`GET /api/reviews/:title`, () => {
+    //   it(`status 200, a review object`, () => {
+    //     return request(app)
+    //       .get(`/api/reviews/Agricola`)
+    //       .expect(200)
+    //       .then(({ body: { review } }) => {
+    //         expect(review).toBeInstanceOf(Object);
+    //         expect(Object.entries(review)).toHaveLength(10);
+    //         expect.objectContaining({
+    //           owner: expect(review.owner).toBe("mallionaire"),
+    //           title: expect(review.title).toBe("Agricola"),
+    //           review_id: expect(review.review_id).toBe(1),
+    //           review_body: expect(review.review_body).toBe("Farmyard fun!"),
+    //           designer: expect(review.designer).toBe("Uwe Rosenberg"),
+    //           review_img_url: expect(review.review_img_url).toBe(
+    //             "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+    //           ),
+    //           category: expect(review.category).toBe("euro game"),
+    //           created_at: expect.any(Date),
+    //           votes: expect(review.votes).toBe(1),
+    //           comment_count: expect(review.comment_count).toBe(0),
+    //         });
+    //       });
+    //   });
+    //   it(`status 404: not found - valid input`, () => {
+    //     return request(app)
+    //       .get(`/api/reviews/wrong`)
+    //       .expect(404)
+    //       .then((res) => {
+    //         expect(res.body.msg).toBe(
+    //           `input 'wrong' not found in 'reviews' database`
+    //         );
+    //       });
+    //   });
+    // });
     describe(`GET /api/reviews/:review_id/comments`, () => {
       it(`status 200, an array of comments from the given Id`, () => {
         return request(app)
@@ -265,8 +300,8 @@ describe(`API`, () => {
   });
   describe(`PATCH Requests`, () => {
     describe(`PATCH /api/reviews/:review_id`, () => {
-      it(`status 200, takes an object with inc_votes and a number which will either increment or decrement the votes property, and will return the updated review`, () => {
-        const data = { inc_votes: -10 };
+      it(`status 200, takes an object with inc_votes or/and review_body either increment or decrement the votes property, and will return the updated review`, () => {
+        const data = { inc_votes: -10, review_body: "this is new review body" };
         return request(app)
           .patch(`/api/reviews/1`)
           .send(data)
@@ -278,7 +313,9 @@ describe(`API`, () => {
               owner: expect(review.owner).toBe("mallionaire"),
               title: expect(review.title).toBe("Agricola"),
               review_id: expect(review.review_id).toBe(1),
-              review_body: expect(review.review_body).toBe("Farmyard fun!"),
+              review_body: expect(review.review_body).toBe(
+                "this is new review body"
+              ),
               designer: expect(review.designer).toBe("Uwe Rosenberg"),
               review_img_url: expect(review.review_img_url).toBe(
                 "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
@@ -299,18 +336,23 @@ describe(`API`, () => {
             expect(res.body.msg).toBe(`Invalid input`);
           });
       });
-      it(`status 400: bad request - invalid key`, () => {
-        const data = { wrong: 1 };
-        return request(app)
-          .patch(`/api/reviews/1`)
-          .send(data)
-          .expect(400)
-          .then((res) => {
-            expect(res.body.msg).toBe(`Invalid input`);
-          });
-      });
+      // it(`status 400: bad request - invalid key`, () => {
+      //   const data = { wrong: 1 };
+      //   return request(app)
+      //     .patch(`/api/reviews/1`)
+      //     .send(data)
+      //     .expect(400)
+      //     .then((res) => {
+      //       expect(res.body.msg).toBe(`Invalid input`);
+      //     });
+      // });
       it(`status 200: extra key-pairs are ignored`, () => {
-        const data = { inc_votes: -10, wrong: "wrong", title: "wrong title" };
+        const data = {
+          inc_votes: -10,
+          review_body: "this is new review body",
+          wrong: "wrong",
+          title: "wrong title",
+        };
         return request(app)
           .patch(`/api/reviews/1`)
           .send(data)
@@ -319,28 +361,32 @@ describe(`API`, () => {
             expect(review).toBeInstanceOf(Object);
             expect(Object.entries(review)).toHaveLength(9);
             expect.objectContaining({
-              review_id: expect.any(Number),
+              owner: expect(review.owner).toBe("mallionaire"),
               title: expect(review.title).toBe("Agricola"),
-              owner: expect.any(String),
-              review_body: expect.any(String),
-              designer: expect.any(String),
-              review_img_url: expect.any(String),
-              category: expect.any(String),
+              review_id: expect(review.review_id).toBe(1),
+              review_body: expect(review.review_body).toBe(
+                "this is new review body"
+              ),
+              designer: expect(review.designer).toBe("Uwe Rosenberg"),
+              review_img_url: expect(review.review_img_url).toBe(
+                "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+              ),
+              category: expect(review.category).toBe("euro game"),
               created_at: expect.any(Date),
               votes: expect(review.votes).toBe(-9),
             });
           });
       });
-      it(`status 400: empty object`, () => {
-        const data = {};
-        return request(app)
-          .patch(`/api/reviews/1`)
-          .send(data)
-          .expect(400)
-          .then((res) => {
-            expect(res.body.msg).toBe(`Invalid input`);
-          });
-      });
+      // it(`status 400: empty object`, () => {
+      //   const data = {};
+      //   return request(app)
+      //     .patch(`/api/reviews/1`)
+      //     .send(data)
+      //     .expect(400)
+      //     .then((res) => {
+      //       expect(res.body.msg).toBe(`Invalid input`);
+      //     });
+      // });
     });
     describe(`PATCH /api/comments/:comment_id`, () => {
       it(`status 200, takes an object with inc_votes, and will return the updated review`, () => {
@@ -515,6 +561,67 @@ describe(`API`, () => {
           });
       });
     });
+  });
+  describe(`PATCH /api/users/:username`, () => {
+    it(`status 200, takes an object with name, avatar_url, and will return the updated user`, () => {
+      const data = {
+        name: "new name",
+        avatar_url: "www.newurl.com",
+      };
+      return request(app)
+        .patch(`/api/users/mallionaire`)
+        .send(data)
+        .expect(200)
+        .then(({ body: { user } }) => {
+          expect(user).toBeInstanceOf(Object);
+          expect(Object.entries(user)).toHaveLength(3);
+          expect.objectContaining({
+            username: expect(user.username).toBe("mallionaire"),
+            name: expect(user.name).toBe("new name"),
+            avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+          });
+        });
+    });
+    // it(`status 400: bad request - invalid key`, () => {
+    //   const data = { wrong: 1 };
+    //   return request(app)
+    //     .patch(`/api/reviews/1`)
+    //     .send(data)
+    //     .expect(400)
+    //     .then((res) => {
+    //       expect(res.body.msg).toBe(`Invalid input`);
+    //     });
+    // });
+    it(`status 200: extra key-pairs are ignored`, () => {
+      const data = {
+        name: "new name",
+        avatar_url: "www.newurl.com",
+        wrong: "wrong",
+      };
+      return request(app)
+        .patch(`/api/users/mallionaire`)
+        .send(data)
+        .expect(200)
+        .then(({ body: { user } }) => {
+          expect(user).toBeInstanceOf(Object);
+          expect(Object.entries(user)).toHaveLength(3);
+          expect.objectContaining({
+            username: expect(user.username).toBe("mallionaire"),
+            name: expect(user.name).toBe("new name"),
+            avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+          });
+        });
+    });
+    // it(`status 400: empty object`, () => {
+    //   const data = {};
+    //   return request(app)
+    //     .patch(`/api/reviews/1`)
+    //     .send(data)
+    //     .expect(400)
+    //     .then((res) => {
+    //       expect(res.body.msg).toBe(`Invalid input`);
+    //     });
+    // });
   });
   describe(`POST requests`, () => {
     describe(`POST /api/reviews/:review_id/comments`, () => {

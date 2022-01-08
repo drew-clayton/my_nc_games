@@ -2,7 +2,6 @@ const {
   removeComment,
   updateCommentFromId,
 } = require("../models/comments.model");
-
 const { checksIfExists } = require(`../models/utils.model`);
 
 exports.deleteComment = (req, res, next) => {
@@ -20,7 +19,6 @@ exports.deleteComment = (req, res, next) => {
 exports.patchCommentFromId = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes, body } = req.body;
-
   Promise.all([
     updateCommentFromId(comment_id, inc_votes, body),
     checksIfExists(`comments`, `comment_id`, comment_id),

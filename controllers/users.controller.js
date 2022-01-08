@@ -1,4 +1,8 @@
-const { selectUsers, selectUserFromId } = require("../models/users.model");
+const {
+  selectUsers,
+  selectUserFromId,
+  updateUserFromId,
+} = require("../models/users.model");
 const { checksIfExists } = require(`../models/utils.model`);
 
 exports.getUsers = (req, res, next) => {
@@ -18,6 +22,16 @@ exports.getUserById = (req, res, next) => {
   ])
     .then(([user]) => {
       res.status(200).send({ username: user[0] });
+    })
+    .catch(next);
+};
+
+exports.patchUserById = (req, res, next) => {
+  const { username } = req.params;
+  const { name, avatar_url } = req.body;
+  updateUserFromId(username, name, avatar_url)
+    .then((user) => {
+      res.status(200).send({ user: user[0] });
     })
     .catch(next);
 };

@@ -3,10 +3,8 @@ const db = require("../db/connection");
 exports.checksIfExists = (tableName, columnName, id) => {
   return db
     .query(
-      `
-    SELECT * FROM ${tableName}
-    WHERE ${columnName} = $1
-    `,
+      `SELECT * FROM ${tableName}
+    WHERE ${columnName} = $1`,
       [id]
     )
     .then(({ rows }) => {
