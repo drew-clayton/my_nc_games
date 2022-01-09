@@ -49,10 +49,10 @@ describe(`API`, () => {
         return request(app)
           .get(`/api/users`)
           .expect(200)
-          .then(({ body: { username } }) => {
-            expect(username).toBeInstanceOf(Array);
-            expect(username).toHaveLength(4);
-            username.forEach(() => {
+          .then(({ body: { users } }) => {
+            expect(users).toBeInstanceOf(Array);
+            expect(users).toHaveLength(4);
+            users.forEach(() => {
               expect.objectContaining({
                 username: expect.any(String),
                 name: expect.any(String),
@@ -67,13 +67,13 @@ describe(`API`, () => {
         return request(app)
           .get(`/api/users/mallionaire`)
           .expect(200)
-          .then(({ body: { username } }) => {
-            expect(username).toBeInstanceOf(Object);
-            expect(Object.entries(username)).toHaveLength(3);
+          .then(({ body: { user } }) => {
+            expect(user).toBeInstanceOf(Object);
+            expect(Object.entries(user)).toHaveLength(3);
             expect.objectContaining({
-              username: expect(username.username).toBe("mallionaire"),
-              name: expect(username.name).toBe("haz"),
-              avatar_url: expect(username.avatar_url).toBe(
+              username: expect(user.username).toBe("mallionaire"),
+              name: expect(user.name).toBe("haz"),
+              avatar_url: expect(user.avatar_url).toBe(
                 "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
               ),
             });

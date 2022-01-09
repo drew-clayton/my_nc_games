@@ -8,8 +8,8 @@ const { checksIfExists } = require(`../models/utils.model`);
 
 exports.getUsers = (req, res, next) => {
   selectUsers()
-    .then((username) => {
-      res.status(200).send({ username });
+    .then((users) => {
+      res.status(200).send({ users });
     })
     .catch(next);
 };
@@ -22,7 +22,7 @@ exports.getUserById = (req, res, next) => {
     checksIfExists(`users`, `username`, username),
   ])
     .then(([user]) => {
-      res.status(200).send({ username: user[0] });
+      res.status(200).send({ user: user[0] });
     })
     .catch(next);
 };
