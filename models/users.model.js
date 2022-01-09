@@ -44,3 +44,16 @@ exports.updateUserFromId = (username, name, avatar) => {
     )
     .then(({ rows }) => rows);
 };
+
+exports.addUser = (obj) => {
+  const { username, name, avatar_url } = obj;
+  return db
+    .query(
+      `INSERT INTO users
+      (username, name, avatar_url)
+      VALUES
+      ($1, $2, $3) RETURNING *;`,
+      [username, name, avatar_url]
+    )
+    .then(({ rows }) => rows);
+};

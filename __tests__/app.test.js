@@ -4,7 +4,6 @@ const { seed } = require("../db/seeds/seed.js");
 const request = require("supertest");
 const app = require("../app");
 const endpoints = require("../endpoints.json");
-const { withArray } = require("pg-format");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -98,12 +97,12 @@ describe(`API`, () => {
           .expect(200)
           .then(({ body: { reviews } }) => {
             expect(reviews).toBeInstanceOf(Array);
-            expect(reviews).toHaveLength(13);
+            expect(reviews).toHaveLength(10);
             expect(reviews).toBeSortedBy(`created_at`, {
               descending: true,
             });
             reviews.forEach((obj) => {
-              expect(Object.entries(obj)).toHaveLength(8);
+              expect(Object.entries(obj)).toHaveLength(9);
               expect.objectContaining({
                 owner: expect.any(String),
                 title: expect.any(String),
@@ -113,6 +112,7 @@ describe(`API`, () => {
                 created_at: expect.any(Date),
                 votes: expect.any(Number),
                 comment_count: expect.any(Number),
+                total_count: expect(obj.total_count).toBe(13),
               });
             });
           });
@@ -143,6 +143,7 @@ describe(`API`, () => {
             expect(reviews).toBeSortedBy(`votes`, { ascending: true });
           });
       });
+
       it(`status 404: incorrect order input`, () => {
         return request(app)
           .get(`/api/reviews?order=wrong`)
@@ -156,8 +157,11 @@ describe(`API`, () => {
           .get(`/api/reviews?category=social deduction`)
           .expect(200)
           .then(({ body: { reviews } }) => {
-            expect(reviews).toHaveLength(11);
-            expect(reviews).toBeSortedBy(`created_at`, { descending: true });
+            expect(reviews).toHaveLength(10);
+            expect(reviews[0].total_count).toBe(11);
+            expect(reviews).toBeSortedBy(`created_at`, {
+              descending: true,
+            });
           });
       });
       it(`status 404: incorrect category input`, () => {
@@ -170,12 +174,48 @@ describe(`API`, () => {
             );
           });
       });
-      it(`status 200, accepts a all queries at the same time`, () => {
+      it(`status 200, accepts a page "p" query defaults to 1`, () => {
         return request(app)
-          .get(`/api/reviews?sort_by=votes&order=ASC&category=social deduction`)
+          .get(`/api/reviews?p=2`)
           .expect(200)
           .then(({ body: { reviews } }) => {
-            expect(reviews).toHaveLength(11);
+            expect(reviews).toHaveLength(3);
+            expect(reviews[0].total_count).toBe(13);
+          });
+      });
+      it(`status 400, wrong value set to page query`, () => {
+        return request(app)
+          .get(`/api/reviews?p=wrong`)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 200, accepts a limit query defaults to 10`, () => {
+        return request(app)
+          .get(`/api/reviews?limit=2`)
+          .expect(200)
+          .then(({ body: { reviews } }) => {
+            expect(reviews).toHaveLength(2);
+            expect(reviews[0].total_count).toBe(13);
+          });
+      });
+      it(`status 400, wrong value set to limit query`, () => {
+        return request(app)
+          .get(`/api/reviews?limit=wrong`)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 200, accepts a all queries at the same time`, () => {
+        return request(app)
+          .get(
+            `/api/reviews?sort_by=votes&order=ASC&category=social deduction&p=3&limit=5`
+          )
+          .expect(200)
+          .then(({ body: { reviews } }) => {
+            expect(reviews).toHaveLength(1);
             expect(reviews).toBeSortedBy(`votes`, { ascending: true });
           });
       });
@@ -223,41 +263,6 @@ describe(`API`, () => {
           });
       });
     });
-    // describe(`GET /api/reviews/:title`, () => {
-    //   it(`status 200, a review object`, () => {
-    //     return request(app)
-    //       .get(`/api/reviews/Agricola`)
-    //       .expect(200)
-    //       .then(({ body: { review } }) => {
-    //         expect(review).toBeInstanceOf(Object);
-    //         expect(Object.entries(review)).toHaveLength(10);
-    //         expect.objectContaining({
-    //           owner: expect(review.owner).toBe("mallionaire"),
-    //           title: expect(review.title).toBe("Agricola"),
-    //           review_id: expect(review.review_id).toBe(1),
-    //           review_body: expect(review.review_body).toBe("Farmyard fun!"),
-    //           designer: expect(review.designer).toBe("Uwe Rosenberg"),
-    //           review_img_url: expect(review.review_img_url).toBe(
-    //             "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
-    //           ),
-    //           category: expect(review.category).toBe("euro game"),
-    //           created_at: expect.any(Date),
-    //           votes: expect(review.votes).toBe(1),
-    //           comment_count: expect(review.comment_count).toBe(0),
-    //         });
-    //       });
-    //   });
-    //   it(`status 404: not found - valid input`, () => {
-    //     return request(app)
-    //       .get(`/api/reviews/wrong`)
-    //       .expect(404)
-    //       .then((res) => {
-    //         expect(res.body.msg).toBe(
-    //           `input 'wrong' not found in 'reviews' database`
-    //         );
-    //       });
-    //   });
-    // });
     describe(`GET /api/reviews/:review_id/comments`, () => {
       it(`status 200, an array of comments from the given Id`, () => {
         return request(app)
@@ -294,6 +299,39 @@ describe(`API`, () => {
             expect(res.body.msg).toBe(
               `input '500' not found in 'reviews' database`
             );
+          });
+      });
+
+      it(`status 200, accepts a page "p" query defaults to 1`, () => {
+        return request(app)
+          .get(`/api/reviews/3/comments?limit=2&p=2`)
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).toHaveLength(1);
+          });
+      });
+      it(`status 200, accepts a limit query defaults to 10`, () => {
+        return request(app)
+          .get(`/api/reviews/3/comments?limit=2`)
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).toHaveLength(2);
+          });
+      });
+      it(`status 400, wrong value set to limit query`, () => {
+        return request(app)
+          .get(`/api/reviews/3/comments?limit=wrong`)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 400, wrong value set to page query`, () => {
+        return request(app)
+          .get(`/api/reviews/3/comments?p=wrong`)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
           });
       });
     });
@@ -336,16 +374,6 @@ describe(`API`, () => {
             expect(res.body.msg).toBe(`Invalid input`);
           });
       });
-      // it(`status 400: bad request - invalid key`, () => {
-      //   const data = { wrong: 1 };
-      //   return request(app)
-      //     .patch(`/api/reviews/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
       it(`status 200: extra key-pairs are ignored`, () => {
         const data = {
           inc_votes: -10,
@@ -377,16 +405,6 @@ describe(`API`, () => {
             });
           });
       });
-      // it(`status 400: empty object`, () => {
-      //   const data = {};
-      //   return request(app)
-      //     .patch(`/api/reviews/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
     });
     describe(`PATCH /api/comments/:comment_id`, () => {
       it(`status 200, takes an object with inc_votes, and will return the updated review`, () => {
@@ -418,16 +436,6 @@ describe(`API`, () => {
             expect(res.body.msg).toBe(`Invalid input`);
           });
       });
-      // it(`status 400: bad request - invalid key`, () => {
-      //   const data = { wrong: 1 };
-      //   return request(app)
-      //     .patch(`/api/comments/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
       it(`status 200: extra key-pairs are ignored and is votes number is empty or zero`, () => {
         const data = { inc_votes: 0, wrong: "wrong", title: "wrong title" };
         return request(app)
@@ -447,16 +455,6 @@ describe(`API`, () => {
             });
           });
       });
-      // it(`status 400: empty object`, () => {
-      //   const data = {};
-      //   return request(app)
-      //     .patch(`/api/comments/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
       it(`status 400: bad request - invalid input`, () => {
         return request(app)
           .patch(`/api/comments/wrong`)
@@ -498,16 +496,6 @@ describe(`API`, () => {
             });
           });
       });
-      // it(`status 400: bad request - invalid key`, () => {
-      //   const data = { wrong: 1 };
-      //   return request(app)
-      //     .patch(`/api/comments/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
       it(`status 200: extra key-pairs are ignored and is votes number is empty or zero`, () => {
         const data = {
           body: "this will replace body",
@@ -532,16 +520,6 @@ describe(`API`, () => {
             });
           });
       });
-      // it(`status 400: empty object`, () => {
-      //   const data = {};
-      //   return request(app)
-      //     .patch(`/api/comments/1`)
-      //     .send(data)
-      //     .expect(400)
-      //     .then((res) => {
-      //       expect(res.body.msg).toBe(`Invalid input`);
-      //     });
-      // });
       it(`status 400: bad request - invalid input`, () => {
         return request(app)
           .patch(`/api/comments/wrong`)
@@ -561,67 +539,47 @@ describe(`API`, () => {
           });
       });
     });
-  });
-  describe(`PATCH /api/users/:username`, () => {
-    it(`status 200, takes an object with name, avatar_url, and will return the updated user`, () => {
-      const data = {
-        name: "new name",
-        avatar_url: "www.newurl.com",
-      };
-      return request(app)
-        .patch(`/api/users/mallionaire`)
-        .send(data)
-        .expect(200)
-        .then(({ body: { user } }) => {
-          expect(user).toBeInstanceOf(Object);
-          expect(Object.entries(user)).toHaveLength(3);
-          expect.objectContaining({
-            username: expect(user.username).toBe("mallionaire"),
-            name: expect(user.name).toBe("new name"),
-            avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+    describe(`PATCH /api/users/:username`, () => {
+      it(`status 200, takes an object with name, avatar_url, and will return the updated user`, () => {
+        const data = {
+          name: "new name",
+          avatar_url: "www.newurl.com",
+        };
+        return request(app)
+          .patch(`/api/users/mallionaire`)
+          .send(data)
+          .expect(200)
+          .then(({ body: { user } }) => {
+            expect(user).toBeInstanceOf(Object);
+            expect(Object.entries(user)).toHaveLength(3);
+            expect.objectContaining({
+              username: expect(user.username).toBe("mallionaire"),
+              name: expect(user.name).toBe("new name"),
+              avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+            });
           });
-        });
-    });
-    // it(`status 400: bad request - invalid key`, () => {
-    //   const data = { wrong: 1 };
-    //   return request(app)
-    //     .patch(`/api/reviews/1`)
-    //     .send(data)
-    //     .expect(400)
-    //     .then((res) => {
-    //       expect(res.body.msg).toBe(`Invalid input`);
-    //     });
-    // });
-    it(`status 200: extra key-pairs are ignored`, () => {
-      const data = {
-        name: "new name",
-        avatar_url: "www.newurl.com",
-        wrong: "wrong",
-      };
-      return request(app)
-        .patch(`/api/users/mallionaire`)
-        .send(data)
-        .expect(200)
-        .then(({ body: { user } }) => {
-          expect(user).toBeInstanceOf(Object);
-          expect(Object.entries(user)).toHaveLength(3);
-          expect.objectContaining({
-            username: expect(user.username).toBe("mallionaire"),
-            name: expect(user.name).toBe("new name"),
-            avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+      });
+      it(`status 200: extra key-pairs are ignored`, () => {
+        const data = {
+          name: "new name",
+          avatar_url: "www.newurl.com",
+          wrong: "wrong",
+        };
+        return request(app)
+          .patch(`/api/users/mallionaire`)
+          .send(data)
+          .expect(200)
+          .then(({ body: { user } }) => {
+            expect(user).toBeInstanceOf(Object);
+            expect(Object.entries(user)).toHaveLength(3);
+            expect.objectContaining({
+              username: expect(user.username).toBe("mallionaire"),
+              name: expect(user.name).toBe("new name"),
+              avatar_url: expect(user.avatar_url).toBe("www.newurl.com"),
+            });
           });
-        });
+      });
     });
-    // it(`status 400: empty object`, () => {
-    //   const data = {};
-    //   return request(app)
-    //     .patch(`/api/reviews/1`)
-    //     .send(data)
-    //     .expect(400)
-    //     .then((res) => {
-    //       expect(res.body.msg).toBe(`Invalid input`);
-    //     });
-    // });
   });
   describe(`POST requests`, () => {
     describe(`POST /api/reviews/:review_id/comments`, () => {
@@ -857,6 +815,88 @@ describe(`API`, () => {
           .expect(400)
           .then((res) => {
             expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+    });
+    describe(`POST /api/users`, () => {
+      it(`status 201, accepts a body with a username,
+      name, and avatar_url, and returns new user object`, () => {
+        const data = {
+          username: "testUsername",
+          name: "testName",
+          avatar_url: "www.avatar_url.com",
+        };
+        return request(app)
+          .post(`/api/users`)
+          .send(data)
+          .expect(201)
+          .then(({ body: { user } }) => {
+            expect(user).toBeInstanceOf(Object);
+            expect(Object.entries(user)).toHaveLength(3);
+            expect.objectContaining({
+              username: expect(user.username).toBe("testUsername"),
+              name: expect(user.name).toBe("testName"),
+              avatar_url: expect(user.avatar_url).toBe("www.avatar_url.com"),
+            });
+          });
+      });
+      it(`status 400: bad request - invalid key`, () => {
+        const data = {
+          wrong: "wrong key",
+          name: "testName",
+          avatar_url: "www.avatar_url.com",
+        };
+        return request(app)
+          .post(`/api/users`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 201, accepts a body with extra properties but doesn't return them extra properties`, () => {
+        const data = {
+          username: "testUsername",
+          name: "testName",
+          avatar_url: "www.avatar_url.com",
+          extra: "test extra",
+        };
+        return request(app)
+          .post(`/api/users`)
+          .send(data)
+          .expect(201)
+          .then(({ body: { user } }) => {
+            expect(user).toBeInstanceOf(Object);
+            expect(Object.entries(user)).toHaveLength(3);
+            expect.objectContaining({
+              username: expect(user.username).toBe("testUsername"),
+              name: expect(user.name).toBe("testName"),
+              avatar_url: expect(user.avatar_url).toBe("www.avatar_url.com"),
+            });
+          });
+      });
+      it(`status 400: empty object`, () => {
+        const data = {};
+        return request(app)
+          .post(`/api/users`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Invalid input`);
+          });
+      });
+      it(`status 400: bad request - username already exists`, () => {
+        const data = {
+          username: "mallionaire",
+          name: "testName",
+          avatar_url: "www.avatar_url.com",
+        };
+        return request(app)
+          .post(`/api/users`)
+          .send(data)
+          .expect(400)
+          .then((res) => {
+            expect(res.body.msg).toBe(`Username already exists`);
           });
       });
     });

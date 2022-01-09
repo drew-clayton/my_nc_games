@@ -2,6 +2,7 @@ const {
   selectUsers,
   selectUserFromId,
   updateUserFromId,
+  addUser,
 } = require("../models/users.model");
 const { checksIfExists } = require(`../models/utils.model`);
 
@@ -32,6 +33,14 @@ exports.patchUserById = (req, res, next) => {
   updateUserFromId(username, name, avatar_url)
     .then((user) => {
       res.status(200).send({ user: user[0] });
+    })
+    .catch(next);
+};
+
+exports.postUser = (req, res, next) => {
+  addUser(req.body)
+    .then((user) => {
+      res.status(201).send({ user: user[0] });
     })
     .catch(next);
 };

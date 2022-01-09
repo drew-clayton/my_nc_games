@@ -33,9 +33,9 @@ exports.patchReviewFromId = (req, res, next) => {
 };
 
 exports.getReviews = (req, res, next) => {
-  const { sort_by, order, category } = req.query;
+  const { limit, p, sort_by, order, category } = req.query;
   Promise.all([
-    selectReviews(sort_by, order, category),
+    selectReviews(limit, p, sort_by, order, category),
     checksIfExists(`reviews`, `category`, category),
   ])
     .then(([reviews]) => {
@@ -46,8 +46,9 @@ exports.getReviews = (req, res, next) => {
 
 exports.getCommentsFromReviewId = (req, res, next) => {
   const { review_id } = req.params;
+  const { limit, p } = req.query;
   Promise.all([
-    selectCommentsFromReviewId(review_id),
+    selectCommentsFromReviewId(review_id, limit, p),
     checksIfExists(`reviews`, `review_id`, review_id),
   ])
     .then(([comments]) => {

@@ -31,7 +31,13 @@ exports.updateReviewFromId = (id, votes = 0, body) => {
     .then(({ rows }) => rows);
 };
 
-exports.selectReviews = (sort_by = `created_at`, order = `DESC`, category) => {
+exports.selectReviews = (
+  limit = 10,
+  p = 1,
+  sort_by = `created_at`,
+  order = `DESC`,
+  category
+) => {
   if (
     ![
       `owner`,
@@ -43,13 +49,16 @@ exports.selectReviews = (sort_by = `created_at`, order = `DESC`, category) => {
       `votes`,
       `comment_count`,
     ].includes(sort_by) ||
-    ![`ASC`, `DESC`].includes(order)
+    ![`ASC`, `DESC`].includes(order) ||
+    Number(limit) === "NaN" ||
+    Number(p) === "NaN"
   ) {
     return Promise.reject({
       status: 404,
       msg: `Input query not found`,
     });
   }
+  const offset = (Number(p) - 1) * Number(limit);
   let where = ``;
   let params = [];
   if (category !== undefined) {
@@ -58,21 +67,32 @@ exports.selectReviews = (sort_by = `created_at`, order = `DESC`, category) => {
   }
   return db
     .query(
-      `SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(comments) AS comment_count FROM reviews  
+      `SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(comments) AS comment_count, CAST (count(*) OVER() AS INTEGER) AS total_count FROM reviews  
       LEFT JOIN comments ON comments.review_id = reviews.review_id
       ${where}
       GROUP BY reviews.review_id
-      ORDER BY ${sort_by} ${order};`,
+      ORDER BY ${sort_by} ${order}
+      LIMIT ${limit} OFFSET ${offset};
+`,
       params
     )
     .then(({ rows }) => rows);
 };
 
-exports.selectCommentsFromReviewId = (id) => {
+exports.selectCommentsFromReviewId = (id, limit = 10, p = 1) => {
+  if (Number(limit) === "NaN" || Number(p) === "NaN") {
+    return Promise.reject({
+      status: 404,
+      msg: `Input query not found`,
+    });
+  }
+  const offset = (Number(p) - 1) * Number(limit);
+
   return db
     .query(
       `SELECT comment_id, votes, created_at, author, body FROM comments  
-      WHERE review_id = $1`,
+      WHERE review_id = $1
+      LIMIT ${limit} OFFSET ${offset};`,
       [id]
     )
     .then(({ rows }) => rows);
