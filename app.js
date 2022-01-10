@@ -4,8 +4,8 @@ const { errorCustom, errorPsql, error500 } = require("./errors");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
 app.use("/api", apiRouter);
 
