@@ -2,7 +2,7 @@
   "GET /api": {
     "description": "serves up a json representation of all the available endpoints of the api"
   },
-  "Review": {
+  "Reviews": {
     "GET /api/reviews": {
       "description": "serves an array of all reviews",
       "queries": ["category", "sort_by", "order", "p", "limit"],
@@ -121,7 +121,7 @@
       "description": "deletes the review object with the given `review_id` and returns no content"
     }
   },
-  "User": {
+  "Users": {
     "GET /api/users": {
       "description": "serves an array of all users",
       "queries": [],
@@ -178,7 +178,7 @@
       }
     }
   },
-  "Category": {
+  "Categories": {
     "GET /api/categories": {
       "description": "serves an array of all categories",
       "queries": [],
@@ -205,7 +205,7 @@
       }
     }
   },
-  "Comment": {
+  "Comments": {
     "GET /api/reviews/:review_id/comments": {
       "description": "serves an array object of comments for the given `review_id`",
       "queries": ["p", "limit"],

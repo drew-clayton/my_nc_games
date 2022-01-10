@@ -1,55 +1,109 @@
 <!---
 # TITLE
-
 ## SUB TITLE
-
-Text
-
-_italics_
-
-`highlighted code or varible names`
-
-[links](www.google.com)
-
-- bullet points
-
-line below
-
----
-
-**bold**
-
-```http
-http style
-```
-
 > highlighted title
-
-```json
-{
-  "json_object": [
-    {
-      "key1": "value1",
-      "key2": "value2"
-    }
-  ]
-}
-```
-
-
-Write your README, including the following information:
-  - [ ] Link to hosted version
-  - [ ] Write a summary of what the project is
-  - [ ] Provide clear instructions of how to clone, install dependencies, seed local database, and run tests
-  - [ ] Include information about how to create the two `.env` files
-  - [ ] Specify minimum versions of `Node.js` and `Postgres` needed to run the project
-
-**Remember that this README is targetted at people who will come to your repo (potentially from your CV or portfolio website) and want to see what you have created, and try it out for themselves(not _just_ to look at your code!). So it is really important to include a link to the hosted version, as well as implement the above `GET /api` endpoint so that it is clear what your api does.**
-
+_italics_
+**bold**
+`highlighted code or varible names`
+[links](www.google.com)
+- bullet points
 --->
+<div id="top"></div>
 
 # My First Server Project
 
-## [my_nc_games](https://myncgames.herokuapp.com)
+Hosted: "https://myncgames.herokuapp.com"
 
-"https://myncgames.herokuapp.com"
+API: "https://myncgames.herokuapp.com/api"
+
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+      <li>
+      <a href="#setup">Setup</a>
+    </li>
+      </ul>
+    </li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
+
+## About the Project
+
+This project is a backend api that will give your several endpoints in which a user can access and interact with a data based filled with multiple game reviews of different categories submitted by various users, and these reviews can be commented and voted upon.
+
+### Built With
+
+- [React.js](https://reactjs.org/)
+- [Node.js v14.18.1](https://nodejs.org/)
+- [Postgres v2.5.2](https://www.postgresql.org/)
+
+## Getting Started
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/dro00/my_nc_games.git
+   ```
+2. Install NPM packages
+   ```sh
+   npm install
+   ```
+3. create .env.development file in root folder
+   ```js
+   PGDATABASE={database here}
+   ```
+4. create .env.test file in root folder
+   ```js
+   PGDATABASE={test database here}
+   ```
+   <p align="right">(<a href="#top">back to top</a>)</p>
+
+### Setup
+
+- to set up the database for the first time run the command line below.
+
+```sh
+npm setup-dbs
+```
+
+- to seed the database run the code below
+
+```sh
+npm seed
+```
+
+- to test run the code below
+
+```sh
+npm test
+```
+
+- to ...
+
+```sh
+npm start
+```
+
+- to ...
+
+```sh
+npm seed:prod
+```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## Contact
+
+Andrew Clayton - andrew.clayton@live.co.uk
+
+Project Link: [https://github.com/dro00/my_nc_games.git](https://github.com/dro00/my_nc_games.git)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
