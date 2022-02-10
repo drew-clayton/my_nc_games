@@ -38,15 +38,14 @@ API: "https://myncgames.herokuapp.com/api"
 
 This project is a backend api that will give your several endpoints in which a user can access and interact with a data based filled with multiple game reviews of different categories submitted by various users, and these reviews can be commented and voted upon.
 
-### Built With
+### Built With:
 
 - [React.js](https://reactjs.org/)
 - [Node.js v14.18.1](https://nodejs.org/)
 - [Postgres v2.5.2](https://www.postgresql.org/)
 
 ## Getting Started
-
-### Installation
+### Installation:
 
 1. Clone the repo
    ```sh
@@ -68,34 +67,28 @@ This project is a backend api that will give your several endpoints in which a u
 
 ### Setup
 
-- to set up the database for the first time run the command line below.
+- to set up the database for the first time.
 
 ```sh
 npm setup-dbs
 ```
 
-- to seed the database run the code below
+- to seed the database.
 
 ```sh
 npm seed
 ```
 
-- to test run the code below
+- to test project.
 
 ```sh
 npm test
 ```
 
-- to ...
+- to run project in browser.
 
 ```sh
 npm start
-```
-
-- to ...
-
-```sh
-npm seed:prod
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
