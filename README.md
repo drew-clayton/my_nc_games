@@ -1,13 +1,3 @@
-<!---
-# TITLE
-## SUB TITLE
-> highlighted title
-_italics_
-**bold**
-`highlighted code or varible names`
-[links](www.google.com)
-- bullet points
---->
 <div id="top"></div>
 
 # My First Server Project
